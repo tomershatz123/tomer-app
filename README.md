@@ -97,6 +97,17 @@ A full-stack task management application built with React, TypeScript, Node.js, 
    JWT_SECRET=your-secret-key-here
 ```
 
+**Important:** Generate a secure random secret for JWT_SECRET:
+```bash
+   # On Mac/Linux:
+   openssl rand -base64 32
+   
+   # Or use Node.js:
+   node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+```
+   
+   Copy the generated string and use it as your JWT_SECRET.
+
 5. Run the application:
 ```bash
    # From root directory, run both frontend and backend:
