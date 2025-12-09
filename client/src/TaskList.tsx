@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './TaskList.css';
 import { CancelIcon, DeleteIcon, EditIcon, PlusIcon } from './Icons';
-import { useApi } from './useApi';
+import { apiGet, apiPost, apiPatch, apiDelete } from './useApi';
 
 export type TaskState = 'not_started' | 'in_progress' | 'complete';
 
@@ -17,7 +17,7 @@ export interface Task {
 
 
 const TaskList: React.FC = () => {
-  const { apiGet, apiPost, apiPatch, apiDelete } = useApi();
+  
   const [tasks, setTasks] = useState<Task[]>([]);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editForm, setEditForm] = useState({
