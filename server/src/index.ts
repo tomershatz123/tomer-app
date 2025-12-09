@@ -7,12 +7,18 @@ import cors from 'cors';
 import pool from './db';
 import { User, Task } from './types';
 import { authenticateToken, AuthRequest, generateToken } from './auth';
+import cookieParser from 'cookie-parser';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+app.use(cookieParser());
+
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:5001', // Your React app URL
+  credentials: true  // Allow cookies
+}));
 app.use(express.json());
 
 // Login route - NO authentication required
@@ -39,9 +45,16 @@ app.post('/api/login', async (req: Request, res: Response) => {
     // Generate JWT token
     const token = generateToken(user.id, user.email);
 
+    res.cookie('token', token, {
+      httpOnly: true,        // Prevents JavaScript access (XSS protection)
+      secure: true,          // Only sent over HTTPS in production
+      sameSite: 'strict',    // CSRF protection
+      maxAge: 24 * 60 * 60 * 1000  // 24 hours
+    });
+
     // Return token and user info
     res.json({
-      token,
+      successs: true,
       user: {
         id: user.id,
         name: user.name,

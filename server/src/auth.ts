@@ -11,8 +11,7 @@ export const authenticateToken = (
   res: Response,
   next: NextFunction
 ) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+  const token = req.cookies?.token;
 
   if (!token) {
     return res.status(401).json({ error: 'Access token required' });
@@ -26,8 +25,7 @@ export const authenticateToken = (
     
     req.userId = decoded.userId;
     req.userEmail = decoded.email;
-    console.log('Req.userId = ', req.userId);
-    console.log('Req.userEmail = ', req.userEmail);
+    
     next();
   } catch (err) {
     return res.status(403).json({ error: 'Invalid or expired token' });
