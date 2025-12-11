@@ -2,6 +2,7 @@ import React, { useState, useEffect, JSX } from 'react';
 import Login from './Login';
 import TaskList from './TaskList';
 import './App.css';
+import ThemeToggle from './ThemeToggle';
 
 interface User {
   id: number;
@@ -51,6 +52,7 @@ function App(): JSX.Element {
       <header className="app-header">
         <h1>Task Manager</h1>
         <div className="user-info">
+          <ThemeToggle />
           <span>Welcome, {user?.name}!</span>
           <button onClick={handleLogout} className="btn-logout">
             Logout

@@ -13,11 +13,12 @@
 
 .task-list-header h2 {
   margin: 0;
+  color: var(--text-color);
 }
 
 .btn-add-task {
   padding: 10px 20px;
-  background-color: #4CAF50;
+  background-color: var(--btn-success);
   color: white;
   border: none;
   border-radius: 4px;
@@ -28,23 +29,22 @@
 }
 
 .btn-add-task:hover {
-  background-color: #45a049;
+  background-color: var(--btn-success-hover);
 }
 
 .add-task-card {
-  background-color: #f0f8ff;
-  border: 2px dashed #2196F3;
-  margin-bottom: 20px;
+  background-color: var(--bg-tertiary);
+  border: 2px dashed var(--btn-primary);
 }
 
 .add-task-card h3 {
   margin-top: 0;
-  color: #2196F3;
+  color: var(--btn-primary);
 }
 
 .no-tasks {
   text-align: center;
-  color: #888;
+  color: var(--text-muted);
   padding: 40px;
   font-style: italic;
 }
@@ -56,11 +56,11 @@
 }
 
 .task-card {
-  background: white;
-  border: 1px solid #ddd;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   padding: 20px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px var(--shadow);
 }
 
 .task-view {
@@ -78,6 +78,7 @@
 .task-header h3 {
   margin: 0;
   font-size: 1.2em;
+  color: var(--text-color);
 }
 
 .task-state-badge {
@@ -89,12 +90,11 @@
 }
 
 .task-description {
-  color: #555;
+  color: var(--text-secondary);
   margin: 0;
   line-height: 1.5;
 }
 
-/* Update task-footer to use flexbox better */
 .task-footer {
   display: flex;
   justify-content: space-between;
@@ -102,28 +102,17 @@
   margin-top: 8px;
 }
 
-/* Group action buttons together */
+.task-date {
+  color: var(--text-muted);
+  font-size: 0.9em;
+}
+
 .task-actions {
   display: flex;
   gap: 8px;
 }
 
-.task-date {
-  color: #888;
-  font-size: 0.9em;
-}
-
-.btn-save, .btn-cancel {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.9em;
-  transition: background-color 0.2s;
-}
-
-/* Update button styles */
-.btn-edit, .btn-delete {
+.btn-edit, .btn-delete, .btn-save, .btn-cancel {
   padding: 8px 12px;
   border: none;
   border-radius: 4px;
@@ -137,43 +126,43 @@
 }
 
 .btn-edit {
-  background-color: #2196F3;
+  background-color: var(--btn-primary);
   color: white;
 }
 
 .btn-edit:hover {
-  background-color: #1976D2;
+  background-color: var(--btn-primary-hover);
 }
 
 .btn-delete {
-  background-color: #f44336;
+  background-color: var(--btn-danger);
   color: white;
 }
 
 .btn-delete:hover {
-  background-color: #da190b;
-}
-
-.btn-edit svg, .btn-delete svg {
-  display: block;
+  background-color: var(--btn-danger-hover);
 }
 
 .btn-save {
-  background-color: #4CAF50;
+  background-color: var(--btn-success);
   color: white;
 }
 
 .btn-save:hover {
-  background-color: #45a049;
+  background-color: var(--btn-success-hover);
 }
 
 .btn-cancel {
-  background-color: #f44336;
+  background-color: var(--btn-danger);
   color: white;
 }
 
 .btn-cancel:hover {
-  background-color: #da190b;
+  background-color: var(--btn-danger-hover);
+}
+
+.btn-edit svg, .btn-delete svg {
+  display: block;
 }
 
 /* Edit Mode Styles */
@@ -185,15 +174,17 @@
 
 .edit-input, .edit-textarea, .edit-select {
   padding: 10px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
   border-radius: 4px;
   font-size: 1em;
   font-family: inherit;
+  background-color: var(--bg-secondary);
+  color: var(--text-color);
 }
 
 .edit-input:focus, .edit-textarea:focus, .edit-select:focus {
   outline: none;
-  border-color: #2196F3;
+  border-color: var(--btn-primary);
 }
 
 .edit-actions {
