@@ -1,5 +1,5 @@
 .task-list-container {
-  max-width: 800px;
+  max-width: 1240px; /* Increased to fit 2 cards (600px each) + gap */
   margin: 0 auto;
   padding: 20px;
 }
@@ -35,6 +35,9 @@
 .add-task-card {
   background-color: var(--bg-tertiary);
   border: 2px dashed var(--btn-primary);
+  margin-bottom: 20px; /* Add spacing below the add form */
+  max-width: 600px; /* Limit add form width */
+  box-sizing: border-box; /* Include padding and border in width */
 }
 
 .add-task-card h3 {
@@ -49,10 +52,28 @@
   font-style: italic;
 }
 
+/* Grid layout for tasks */
 .tasks {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(2, 600px); /* 2 columns, 600px each */
   gap: 20px;
+  justify-content: center; /* Center the grid if container is wider */
+}
+
+/* Responsive: single column on smaller screens */
+@media (max-width: 1280px) {
+  .tasks {
+    grid-template-columns: 1fr; /* Single column on smaller screens */
+  }
+  
+  .task-card {
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  
+  .task-list-container {
+    max-width: 640px;
+  }
 }
 
 .task-card {
@@ -61,8 +82,11 @@
   border-radius: 8px;
   padding: 20px;
   box-shadow: 0 2px 4px var(--shadow);
+  width: 600px; /* Fixed width */
+  box-sizing: border-box; /* Include padding and border in width */
 }
 
+/* Rest of your existing styles remain the same */
 .task-view {
   display: flex;
   flex-direction: column;
