@@ -82,15 +82,20 @@
   border-radius: 8px;
   padding: 20px;
   box-shadow: 0 2px 4px var(--shadow);
-  width: 600px; /* Fixed width */
-  box-sizing: border-box; /* Include padding and border in width */
+  width: 600px;
+  box-sizing: border-box;
+  display: flex; /* Add flexbox */
+  flex-direction: column; /* Stack content vertically */
+  min-height: 200px; /* Optional: set minimum height for consistency */
 }
+
 
 /* Rest of your existing styles remain the same */
 .task-view {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  flex: 1; /* Take up all available space */
 }
 
 .task-header {
@@ -117,14 +122,17 @@
   color: var(--text-secondary);
   margin: 0;
   line-height: 1.5;
+  flex: 1; /* Allow description to grow and push footer down */
 }
 
 .task-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 8px;
+  margin-top: auto; /* Push footer to bottom */
+  padding-top: 12px; /* Add some spacing from content above */
 }
+
 
 .task-date {
   color: var(--text-muted);
