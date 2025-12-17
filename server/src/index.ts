@@ -5,7 +5,7 @@ dotenv.config({ path: path.resolve(__dirname, '../.env') });
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import pool from './db';
-import { User, Task } from './types';
+import { User, Task, TaskColor } from './types';
 import { authenticateToken, AuthRequest, generateToken } from './auth';
 import cookieParser from 'cookie-parser';
 
@@ -103,12 +103,12 @@ app.get('/api/tasks', authenticateToken, async (req: AuthRequest, res: Response)
 
 app.post('/api/tasks', authenticateToken, async (req: AuthRequest, res: Response) => {
   try {
-    const { title, description, state } = req.body;
+    const { title, description, state, color } = req.body;
     
     // Automatically use the authenticated user's ID
     const result = await pool.query<Task>(
-      'INSERT INTO tasks (title, description, state, user_id) VALUES ($1, $2, $3, $4) RETURNING *',
-      [title, description, state || 'not_started', req.userId]
+      'INSERT INTO tasks (title, description, state, color, user_id) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+      [title, description, state || 'not_started', color || 'blue', req.userId]
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
@@ -120,7 +120,15 @@ app.post('/api/tasks', authenticateToken, async (req: AuthRequest, res: Response
 app.patch('/api/tasks/:id', authenticateToken, async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const { title, description, state } = req.body;
+    const { title, description, state, color } = req.body;
+
+    // Validate color if provided
+    const validColors: TaskColor[] = ['red', 'blue', 'green', 'yellow', 'purple'];
+    if (color !== undefined && !validColors.includes(color)) {
+      return res.status(400).json({ 
+        error: `Invalid color. Must be one of: ${validColors.join(', ')}` 
+      });
+    }
     
     // Build dynamic query
     const updates: string[] = [];
@@ -142,6 +150,12 @@ app.patch('/api/tasks/:id', authenticateToken, async (req: AuthRequest, res: Res
     if (state !== undefined) {
       updates.push(`state = $${paramCount}`);
       values.push(state);
+      paramCount++;
+    }
+
+    if (color !== undefined) {
+      updates.push(`color = $${paramCount}`);
+      values.push(color);
       paramCount++;
     }
     

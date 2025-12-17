@@ -1,37 +1,39 @@
 import React, { useState, useEffect } from 'react';
+import { EditIcon, SaveIcon, CancelIcon, PlusIcon, DeleteIcon } from './Icons';
+import { useTheme } from './ThemeContext';
 import './TaskList.css';
-import { CancelIcon, DeleteIcon, EditIcon, PlusIcon } from './Icons';
-import { apiGet, apiPost, apiPatch, apiDelete } from './useApi';
 
 export type TaskState = 'not_started' | 'in_progress' | 'complete';
+export type TaskColor = 'red' | 'blue' | 'green' | 'yellow' | 'purple';
 
 export interface Task {
   id: number;
   title: string;
   description: string | null;
   state: TaskState;
+  color: TaskColor;
   user_id: number | null;
   created_at: string;
   updated_at: string;
 }
 
-
 const TaskList: React.FC = () => {
-  
+  const { theme } = useTheme();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editForm, setEditForm] = useState({
     title: '',
     description: '',
-    state: 'not_started' as TaskState
+    state: 'not_started' as TaskState,
+    color: 'blue' as TaskColor
   });
   
-  // New task form state
   const [showAddForm, setShowAddForm] = useState(false);
   const [newTask, setNewTask] = useState({
     title: '',
     description: '',
-    state: 'not_started' as TaskState
+    state: 'not_started' as TaskState,
+    color: 'blue' as TaskColor
   });
 
   useEffect(() => {
@@ -39,9 +41,14 @@ const TaskList: React.FC = () => {
   }, []);
 
   const fetchTasks = async () => {
+    const token = localStorage.getItem('token');
     
     try {
-      const response = await apiGet('/api/tasks');
+      const response = await fetch('/api/tasks', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       const data = await response.json();
       setTasks(data);
     } catch (err) {
@@ -54,19 +61,29 @@ const TaskList: React.FC = () => {
     setEditForm({
       title: task.title,
       description: task.description || '',
-      state: task.state
+      state: task.state,
+      color: task.color
     });
   };
 
   const cancelEditing = () => {
     setEditingId(null);
-    setEditForm({ title: '', description: '', state: 'not_started' });
+    setEditForm({ title: '', description: '', state: 'not_started', color: 'blue' });
   };
 
   const updateTask = async (id: number) => {
+    const token = localStorage.getItem('token');
+    
     try {
-      const response = await apiPatch(`/api/tasks/${id}`, editForm);
-  
+      const response = await fetch(`/api/tasks/${id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(editForm),
+      });
+
       if (response.ok) {
         const updatedTask = await response.json();
         setTasks(tasks.map(task => task.id === id ? updatedTask : task));
@@ -78,19 +95,27 @@ const TaskList: React.FC = () => {
   };
 
   const createTask = async () => {
-
+    const token = localStorage.getItem('token');
+    
     if (!newTask.title.trim()) {
       alert('Title is required');
       return;
     }
-  
+
     try {
-      const response = await apiPost('/api/tasks', newTask);
-  
+      const response = await fetch('/api/tasks', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(newTask),
+      });
+
       if (response.ok) {
         const createdTask = await response.json();
         setTasks([createdTask, ...tasks]);
-        setNewTask({ title: '', description: '', state: 'not_started' });
+        setNewTask({ title: '', description: '', state: 'not_started', color: 'blue' });
         setShowAddForm(false);
       }
     } catch (err) {
@@ -99,20 +124,25 @@ const TaskList: React.FC = () => {
   };
 
   const cancelAddTask = () => {
-    setNewTask({ title: '', description: '', state: 'not_started' });
+    setNewTask({ title: '', description: '', state: 'not_started', color: 'blue' });
     setShowAddForm(false);
   };
 
-  // Add delete function
   const deleteTask = async (id: number, title: string) => {
+    const token = localStorage.getItem('token');
     
     if (!window.confirm(`Are you sure you want to delete "${title}"?`)) {
       return;
     }
-  
+
     try {
-      const response = await apiDelete(`/api/tasks/${id}`);
-  
+      const response = await fetch(`/api/tasks/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+      });
+
       if (response.ok || response.status === 204) {
         setTasks(tasks.filter(task => task.id !== id));
       } else {
@@ -126,15 +156,55 @@ const TaskList: React.FC = () => {
 
   const getStateColor = (state: TaskState): string => {
     switch (state) {
-      case 'not_started': return '#f44336';
-      case 'in_progress': return '#ff9800';
-      case 'complete': return '#4caf50';
+      case 'not_started': return 'var(--state-not-started)';
+      case 'in_progress': return 'var(--state-in-progress)';
+      case 'complete': return 'var(--state-complete)';
       default: return '#999';
     }
   };
 
   const getStateLabel = (state: TaskState): string => {
     return state.replace('_', ' ').toUpperCase();
+  };
+
+  const getColorValue = (color: TaskColor): string => {
+    // Lighter colors for light theme, darker for dark theme
+    if (theme === 'light') {
+      switch (color) {
+        case 'red': return '#fecaca'; // very light red
+        case 'blue': return '#bfdbfe'; // very light blue
+        case 'green': return '#bbf7d0'; // very light green
+        case 'yellow': return '#fef08a'; // very light yellow
+        case 'purple': return '#e9d5ff'; // very light purple
+        default: return '#bfdbfe';
+      }
+    } else {
+      // Dark theme
+      switch (color) {
+        case 'red': return '#7f1d1d'; // dark red
+        case 'blue': return '#1e3a8a'; // dark blue
+        case 'green': return '#14532d'; // dark green
+        case 'yellow': return '#713f12'; // dark yellow
+        case 'purple': return '#581c87'; // dark purple
+        default: return '#1e3a8a';
+      }
+    }
+  };
+
+  const getColorValueForPicker = (color: TaskColor): string => {
+    // Vibrant colors for color picker (same in both themes)
+    switch (color) {
+      case 'red': return '#ef4444';
+      case 'blue': return '#3b82f6';
+      case 'green': return '#10b981';
+      case 'yellow': return '#f59e0b';
+      case 'purple': return '#a855f7';
+      default: return '#3b82f6';
+    }
+  };
+
+  const getColorLabel = (color: TaskColor): string => {
+    return color.charAt(0).toUpperCase() + color.slice(1);
   };
 
   return (
@@ -178,9 +248,26 @@ const TaskList: React.FC = () => {
               <option value="in_progress">In Progress</option>
               <option value="complete">Complete</option>
             </select>
+            <div className="color-picker">
+              <label>Color:</label>
+              <div className="color-options">
+                {(['red', 'blue', 'green', 'yellow', 'purple'] as TaskColor[]).map(color => (
+                  <button
+                    key={color}
+                    type="button"
+                    className={`color-option ${newTask.color === color ? 'selected' : ''}`}
+                    style={{ backgroundColor: getColorValueForPicker(color) }}
+                    onClick={() => setNewTask({ ...newTask, color })}
+                    title={getColorLabel(color)}
+                    aria-label={`Select ${color} color`}
+                  />
+                ))}
+              </div>
+            </div>
             <div className="edit-actions">
               <button onClick={createTask} className="btn-save">
-                Create Task
+                <SaveIcon size={16} />
+                <span style={{ marginLeft: '6px' }}>Create Task</span>
               </button>
               <button onClick={cancelAddTask} className="btn-cancel">
                 <CancelIcon size={16} />
@@ -197,7 +284,11 @@ const TaskList: React.FC = () => {
       ) : (
         <div className="tasks">
           {tasks.map(task => (
-            <div key={task.id} className="task-card">
+            <div 
+              key={task.id} 
+              className="task-card colored-card"
+              style={{ backgroundColor: getColorValue(task.color) }}
+            >
               {editingId === task.id ? (
                 // Edit Mode
                 <div className="task-edit">
@@ -224,12 +315,30 @@ const TaskList: React.FC = () => {
                     <option value="in_progress">In Progress</option>
                     <option value="complete">Complete</option>
                   </select>
+                  <div className="color-picker">
+                    <label>Color:</label>
+                    <div className="color-options">
+                      {(['red', 'blue', 'green', 'yellow', 'purple'] as TaskColor[]).map(color => (
+                        <button
+                          key={color}
+                          type="button"
+                          className={`color-option ${editForm.color === color ? 'selected' : ''}`}
+                          style={{ backgroundColor: getColorValueForPicker(color) }}
+                          onClick={() => setEditForm({ ...editForm, color })}
+                          title={getColorLabel(color)}
+                          aria-label={`Select ${color} color`}
+                        />
+                      ))}
+                    </div>
+                  </div>
                   <div className="edit-actions">
                     <button onClick={() => updateTask(task.id)} className="btn-save">
-                      Save
+                      <SaveIcon size={16} />
+                      <span style={{ marginLeft: '6px' }}>Save</span>
                     </button>
                     <button onClick={cancelEditing} className="btn-cancel">
-                      Cancel
+                      <CancelIcon size={16} />
+                      <span style={{ marginLeft: '6px' }}>Cancel</span>
                     </button>
                   </div>
                 </div>

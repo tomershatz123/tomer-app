@@ -223,3 +223,51 @@
   display: flex;
   gap: 10px;
 }
+
+/* Color Picker Styles */
+.color-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.color-picker label {
+  color: var(--text-secondary);
+  font-weight: 500;
+  font-size: 0.9em;
+}
+
+.color-options {
+  display: flex;
+  gap: 10px;
+}
+
+.color-option {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 3px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.color-option:hover {
+  transform: scale(1.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.color-option.selected {
+  border-color: var(--text-color);
+  box-shadow: 0 0 0 2px var(--bg-secondary), 0 0 0 4px var(--text-color);
+}
+
+.task-card.colored-card {
+  border: none; /* Remove default border */
+}
+
+.task-card.colored-card .task-header h3,
+.task-card.colored-card .task-description,
+.task-card.colored-card .task-date {
+  color: inherit; /* Text color adapts to theme */
+}
