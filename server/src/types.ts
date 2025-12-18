@@ -18,6 +18,7 @@ export interface User {
     description: string | null;
     state: TaskState;
     color: TaskColor;
+    ordinal: number;
     user_id: number | null;
     created_at: Date;
     updated_at: Date;

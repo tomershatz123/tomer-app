@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { EditIcon, SaveIcon, CancelIcon, PlusIcon, DeleteIcon } from './Icons';
 import { useTheme } from './ThemeContext';
 import './TaskList.css';
+import { apiDelete, apiGet, apiPatch, apiPost } from './useApi';
 
 export type TaskState = 'not_started' | 'in_progress' | 'complete';
 export type TaskColor = 'red' | 'blue' | 'green' | 'yellow' | 'purple';
@@ -12,6 +13,7 @@ export interface Task {
   description: string | null;
   state: TaskState;
   color: TaskColor;
+  ordinal: number;
   user_id: number | null;
   created_at: string;
   updated_at: string;
@@ -21,6 +23,8 @@ const TaskList: React.FC = () => {
   const { theme } = useTheme();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [draggedTaskId, setDraggedTaskId] = useState<number | null>(null);
+  const [dragOverTaskId, setDragOverTaskId] = useState<number | null>(null);
   const [editForm, setEditForm] = useState({
     title: '',
     description: '',
@@ -41,19 +45,87 @@ const TaskList: React.FC = () => {
   }, []);
 
   const fetchTasks = async () => {
-    const token = localStorage.getItem('token');
     
     try {
-      const response = await fetch('/api/tasks', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      const response = await apiGet('/api/tasks');
       const data = await response.json();
       setTasks(data);
     } catch (err) {
       console.error('Error fetching tasks:', err);
     }
+  };
+
+  const reorderTasks = async (newTaskOrder: Task[]) => {
+    const taskIds = newTaskOrder.map(task => task.id);
+    
+    try {
+      const response = await apiPatch('/api/tasks/reorder', { taskIds });
+
+      if (response.ok) {
+        const updatedTasks = await response.json();
+        setTasks(updatedTasks);
+      }
+    } catch (err) {
+      console.error('Error reordering tasks:', err);
+    }
+  };
+
+  const handleDragStart = (e: React.DragEvent<HTMLDivElement>, taskId: number) => {
+    setDraggedTaskId(taskId);
+    e.dataTransfer.effectAllowed = 'move';
+    // Make the drag image slightly transparent
+    if (e.currentTarget instanceof HTMLElement) {
+      e.currentTarget.style.opacity = '0.5';
+    }
+  };
+
+  const handleDragEnd = (e: React.DragEvent<HTMLDivElement>) => {
+    if (e.currentTarget instanceof HTMLElement) {
+      e.currentTarget.style.opacity = '1';
+    }
+    setDraggedTaskId(null);
+    setDragOverTaskId(null);
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>, taskId: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    
+    if (draggedTaskId !== taskId) {
+      setDragOverTaskId(taskId);
+    }
+  };
+
+  const handleDragLeave = () => {
+    setDragOverTaskId(null);
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>, targetTaskId: number) => {
+    e.preventDefault();
+    
+    if (!draggedTaskId || draggedTaskId === targetTaskId) {
+      return;
+    }
+
+    const draggedIndex = tasks.findIndex(t => t.id === draggedTaskId);
+    const targetIndex = tasks.findIndex(t => t.id === targetTaskId);
+
+    if (draggedIndex === -1 || targetIndex === -1) {
+      return;
+    }
+
+    // Create new array with reordered tasks
+    const newTasks = [...tasks];
+    const [draggedTask] = newTasks.splice(draggedIndex, 1);
+    newTasks.splice(targetIndex, 0, draggedTask);
+
+    // Update state immediately for smooth UX
+    setTasks(newTasks);
+    
+    // Send update to backend
+    reorderTasks(newTasks);
+    
+    setDragOverTaskId(null);
   };
 
   const startEditing = (task: Task) => {
@@ -72,18 +144,11 @@ const TaskList: React.FC = () => {
   };
 
   const updateTask = async (id: number) => {
-    const token = localStorage.getItem('token');
+    
     
     try {
-      const response = await fetch(`/api/tasks/${id}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(editForm),
-      });
-
+      const response = await apiPatch(`/api/tasks/${id}`, editForm);
+      
       if (response.ok) {
         const updatedTask = await response.json();
         setTasks(tasks.map(task => task.id === id ? updatedTask : task));
@@ -95,7 +160,6 @@ const TaskList: React.FC = () => {
   };
 
   const createTask = async () => {
-    const token = localStorage.getItem('token');
     
     if (!newTask.title.trim()) {
       alert('Title is required');
@@ -103,18 +167,11 @@ const TaskList: React.FC = () => {
     }
 
     try {
-      const response = await fetch('/api/tasks', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(newTask),
-      });
-
+      const response = await apiPost('/api/tasks', newTask);
+        
       if (response.ok) {
         const createdTask = await response.json();
-        setTasks([createdTask, ...tasks]);
+        setTasks([...tasks, createdTask]); // Add to end
         setNewTask({ title: '', description: '', state: 'not_started', color: 'blue' });
         setShowAddForm(false);
       }
@@ -129,19 +186,13 @@ const TaskList: React.FC = () => {
   };
 
   const deleteTask = async (id: number, title: string) => {
-    const token = localStorage.getItem('token');
     
     if (!window.confirm(`Are you sure you want to delete "${title}"?`)) {
       return;
     }
 
     try {
-      const response = await fetch(`/api/tasks/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
-      });
+      const response = await apiDelete(`/api/tasks/${id}`);
 
       if (response.ok || response.status === 204) {
         setTasks(tasks.filter(task => task.id !== id));
@@ -168,31 +219,28 @@ const TaskList: React.FC = () => {
   };
 
   const getColorValue = (color: TaskColor): string => {
-    // Lighter colors for light theme, darker for dark theme
     if (theme === 'light') {
       switch (color) {
-        case 'red': return '#fecaca'; // very light red
-        case 'blue': return '#bfdbfe'; // very light blue
-        case 'green': return '#bbf7d0'; // very light green
-        case 'yellow': return '#fef08a'; // very light yellow
-        case 'purple': return '#e9d5ff'; // very light purple
+        case 'red': return '#fecaca';
+        case 'blue': return '#bfdbfe';
+        case 'green': return '#bbf7d0';
+        case 'yellow': return '#fef08a';
+        case 'purple': return '#e9d5ff';
         default: return '#bfdbfe';
       }
     } else {
-      // Dark theme
       switch (color) {
-        case 'red': return '#7f1d1d'; // dark red
-        case 'blue': return '#1e3a8a'; // dark blue
-        case 'green': return '#14532d'; // dark green
-        case 'yellow': return '#713f12'; // dark yellow
-        case 'purple': return '#581c87'; // dark purple
+        case 'red': return '#7f1d1d';
+        case 'blue': return '#1e3a8a';
+        case 'green': return '#14532d';
+        case 'yellow': return '#713f12';
+        case 'purple': return '#581c87';
         default: return '#1e3a8a';
       }
     }
   };
 
   const getColorValueForPicker = (color: TaskColor): string => {
-    // Vibrant colors for color picker (same in both themes)
     switch (color) {
       case 'red': return '#ef4444';
       case 'blue': return '#3b82f6';
@@ -283,11 +331,17 @@ const TaskList: React.FC = () => {
         <p className="no-tasks">No tasks found. Create your first task!</p>
       ) : (
         <div className="tasks">
-          {tasks.map(task => (
+          {tasks.map((task, index) => (
             <div 
               key={task.id} 
-              className="task-card colored-card"
+              className={`task-card colored-card ${dragOverTaskId === task.id ? 'drag-over' : ''} ${editingId === task.id ? 'editing' : ''}`}
               style={{ backgroundColor: getColorValue(task.color) }}
+              draggable={editingId !== task.id}
+              onDragStart={(e) => handleDragStart(e, task.id)}
+              onDragEnd={handleDragEnd}
+              onDragOver={(e) => handleDragOver(e, task.id)}
+              onDragLeave={handleDragLeave}
+              onDrop={(e) => handleDrop(e, task.id)}
             >
               {editingId === task.id ? (
                 // Edit Mode
@@ -346,7 +400,10 @@ const TaskList: React.FC = () => {
                 // View Mode
                 <div className="task-view">
                   <div className="task-header">
-                    <h3>{task.title}</h3>
+                    <div className="task-title-wrapper">
+                      <span className="task-ordinal">#{index + 1}</span>
+                      <h3>{task.title}</h3>
+                    </div>
                     <span 
                       className="task-state-badge" 
                       style={{ backgroundColor: getStateColor(task.state) }}

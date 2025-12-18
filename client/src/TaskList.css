@@ -271,3 +271,45 @@
 .task-card.colored-card .task-date {
   color: inherit; /* Text color adapts to theme */
 }
+
+/* Drag and Drop Styles */
+.task-card {
+  cursor: grab;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.task-card.editing {
+  cursor: default;
+}
+
+.task-card:active:not(.editing) {
+  cursor: grabbing;
+}
+
+.task-card.drag-over {
+  transform: scale(1.02);
+  box-shadow: 0 8px 16px var(--shadow-lg);
+  border: 2px dashed var(--text-color);
+}
+
+/* Task ordinal number */
+.task-title-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+
+.task-ordinal {
+  font-size: 0.9em;
+  font-weight: bold;
+  color: var(--text-muted);
+  min-width: 30px;
+}
+
+.task-header h3 {
+  margin: 0;
+  font-size: 1.2em;
+  color: var(--text-color);
+  flex: 1;
+}

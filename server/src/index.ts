@@ -91,7 +91,7 @@ app.get('/api/tasks', authenticateToken, async (req: AuthRequest, res: Response)
   try {
     // Get only tasks for the logged-in user
     const result = await pool.query<Task>(
-      'SELECT * FROM tasks WHERE user_id = $1 ORDER BY created_at DESC',
+      'SELECT * FROM tasks WHERE user_id = $1 ORDER BY ordinal ASC, created_at DESC',
       [req.userId]
     );
     res.json(result.rows);
@@ -104,11 +104,18 @@ app.get('/api/tasks', authenticateToken, async (req: AuthRequest, res: Response)
 app.post('/api/tasks', authenticateToken, async (req: AuthRequest, res: Response) => {
   try {
     const { title, description, state, color } = req.body;
+
+    // Get the max ordinal for this user
+    const maxOrdinalResult = await pool.query(
+      'SELECT COALESCE(MAX(ordinal), 0) as max_ordinal FROM tasks WHERE user_id = $1',
+      [req.userId]
+    );
+    const nextOrdinal = maxOrdinalResult.rows[0].max_ordinal + 1;
     
     // Automatically use the authenticated user's ID
     const result = await pool.query<Task>(
-      'INSERT INTO tasks (title, description, state, color, user_id) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-      [title, description, state || 'not_started', color || 'blue', req.userId]
+      'INSERT INTO tasks (title, description, state, color, ordinal, user_id) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+      [title, description, state || 'not_started', color || 'blue', nextOrdinal, req.userId]
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
@@ -116,6 +123,39 @@ app.post('/api/tasks', authenticateToken, async (req: AuthRequest, res: Response
     res.status(500).json({ error: 'Server error' });
   }
 });
+
+// Reorder tasks
+app.patch('/api/tasks/reorder', authenticateToken, async (req: AuthRequest, res: Response) => {
+  try {
+    const { taskIds } = req.body; // Array of task IDs in new order
+    
+    if (!Array.isArray(taskIds) || taskIds.length === 0) {
+      return res.status(400).json({ error: 'Invalid task IDs array' });
+    }
+    
+    // Update ordinal for each task
+    const updatePromises = taskIds.map((taskId, index) => 
+      pool.query(
+        'UPDATE tasks SET ordinal = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 AND user_id = $3',
+        [index + 1, taskId, req.userId]
+      )
+    );
+    
+    await Promise.all(updatePromises);
+    
+    // Return updated tasks
+    const result = await pool.query<Task>(
+      'SELECT * FROM tasks WHERE user_id = $1 ORDER BY ordinal ASC',
+      [req.userId]
+    );
+    
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 
 app.patch('/api/tasks/:id', authenticateToken, async (req: AuthRequest, res: Response) => {
   try {
@@ -187,6 +227,7 @@ app.patch('/api/tasks/:id', authenticateToken, async (req: AuthRequest, res: Res
     res.status(500).json({ error: 'Server error' });
   }
 });
+
 
 app.delete('/api/tasks/:id', authenticateToken, async (req: AuthRequest, res: Response) => {
   try {
