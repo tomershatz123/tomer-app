@@ -1,5 +1,5 @@
 .task-list-container {
-  max-width: 1240px; /* Increased to fit 2 cards (600px each) + gap */
+  max-width: 1280px;
   margin: 0 auto;
   padding: 20px;
 }
@@ -14,6 +14,21 @@
 .task-list-header h2 {
   margin: 0;
   color: var(--text-color);
+}
+
+.masonry-grid {
+  display: flex;
+  margin-left: -20px; /* Offset for column gap */
+  width: auto;
+}
+
+.masonry-grid-column {
+  padding-left: 20px; /* Column gap */
+  background-clip: padding-box;
+}
+
+.masonry-grid-column > div {
+  margin-bottom: 20px;
 }
 
 .btn-add-task {
@@ -52,29 +67,6 @@
   font-style: italic;
 }
 
-/* Grid layout for tasks */
-.tasks {
-  display: grid;
-  grid-template-columns: repeat(2, 600px); /* 2 columns, 600px each */
-  gap: 20px;
-  justify-content: center; /* Center the grid if container is wider */
-}
-
-/* Responsive: single column on smaller screens */
-@media (max-width: 1280px) {
-  .tasks {
-    grid-template-columns: 1fr; /* Single column on smaller screens */
-  }
-  
-  .task-card {
-    max-width: 600px;
-    margin: 0 auto;
-  }
-  
-  .task-list-container {
-    max-width: 640px;
-  }
-}
 
 .task-card {
   background: var(--bg-secondary);
@@ -82,13 +74,24 @@
   border-radius: 8px;
   padding: 20px;
   box-shadow: 0 2px 4px var(--shadow);
-  width: 600px;
+  width: 400px; /* Changed from 600px to 400px */
   box-sizing: border-box;
-  display: flex; /* Add flexbox */
-  flex-direction: column; /* Stack content vertically */
-  min-height: 200px; /* Optional: set minimum height for consistency */
+  display: flex;
+  flex-direction: column;
+  min-height: 200px;
 }
 
+@media (max-width: 860px) {
+  .task-card {
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+  }
+  
+  .task-list-container {
+    max-width: 440px;
+  }
+}
 
 /* Rest of your existing styles remain the same */
 .task-view {
@@ -123,6 +126,7 @@
   margin: 0;
   line-height: 1.5;
   flex: 1; /* Allow description to grow and push footer down */
+  white-space: pre-wrap;
 }
 
 .task-footer {

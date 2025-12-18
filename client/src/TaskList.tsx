@@ -1,3 +1,4 @@
+import Masonry from 'react-masonry-css';
 import React, { useState, useEffect } from 'react';
 import { EditIcon, SaveIcon, CancelIcon, PlusIcon, DeleteIcon } from './Icons';
 import { useTheme } from './ThemeContext';
@@ -255,6 +256,12 @@ const TaskList: React.FC = () => {
     return color.charAt(0).toUpperCase() + color.slice(1);
   };
 
+  const breakpointColumns = {
+    default: 3,  // 3 columns by default (1200px+)
+    1200: 2,     // 2 columns for medium screens
+    800: 1       // 1 column for small screens
+  };
+
   return (
     <div className="task-list-container">
       <div className="task-list-header">
@@ -330,7 +337,11 @@ const TaskList: React.FC = () => {
       {tasks.length === 0 ? (
         <p className="no-tasks">No tasks found. Create your first task!</p>
       ) : (
-        <div className="tasks">
+        <Masonry
+          breakpointCols={breakpointColumns}
+          className="masonry-grid"
+          columnClassName="masonry-grid-column"
+        >
           {tasks.map((task, index) => (
             <div 
               key={task.id} 
@@ -441,7 +452,7 @@ const TaskList: React.FC = () => {
               )}
             </div>
           ))}
-        </div>
+        </Masonry>
       )}
     </div>
   );
