@@ -1,0 +1,68 @@
+#version: '3.8'
+
+services:
+  # React Frontend
+  frontend:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    environment:
+      - REACT_APP_API_URL=http://localhost:5001
+    networks:
+      - app-network
+
+  # Express Backend
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    ports:
+      - "5001:5001"
+    env_file:
+      - ./server/.env
+    environment:
+      - DATABASE_URL=postgresql://postgres:secret@db:5432/tomerapp
+      - NODE_ENV=development
+    depends_on:
+      - db
+    networks:
+      - app-network
+    volumes:
+      # Mount source code for hot-reloading in development
+      - ./server:/app
+      - /app/node_modules
+
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: tomerapp
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: secret
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      # Mount init script - runs only on first database creation
+      - ./server/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+# Named volumes for data persistence
+volumes:
+  postgres_data:
+    driver: local
+
+# Networks for service communication
+networks:
+  app-network:
+    driver: bridge

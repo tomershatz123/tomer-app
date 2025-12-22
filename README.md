@@ -62,6 +62,8 @@ A full-stack task management application built with React, TypeScript, Node.js, 
    \c tomerapp
    
    CREATE TYPE taskstate AS ENUM ('not_started', 'in_progress', 'complete');
+
+   CREATE TYPE taskcolor AS ENUM ('red', 'blue', 'green', 'yellow', 'purple');
    
    CREATE TABLE users (
      id SERIAL PRIMARY KEY,
@@ -75,6 +77,8 @@ A full-stack task management application built with React, TypeScript, Node.js, 
      title VARCHAR(255) NOT NULL,
      description TEXT,
      state taskstate DEFAULT 'not_started',
+     color taskcolor DEFAULT 'blue',
+     ordinal INTEGER DEFAULT 0,
      user_id INTEGER REFERENCES users(id),
      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
