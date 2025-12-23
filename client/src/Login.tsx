@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './Login.css';
+import config from './config';
 
 interface LoginProps {
   onLoginSuccess: (token: string, user: { id: number; name: string; email: string }) => void;
@@ -16,7 +17,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
     setLoading(true);
 
     try {
-      const response = await fetch('/api/login', {
+      const response = await fetch(`${config.API_URL}/api/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

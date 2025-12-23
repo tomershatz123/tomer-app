@@ -16,8 +16,13 @@ app.use(cookieParser());
 
 // Middleware
 app.use(cors({
-  origin: 'http://localhost:5001', // Your React app URL
-  credentials: true  // Allow cookies
+  origin: [
+    'http://localhost:3000',
+    'https://tomer-app.onrender.com'
+  ],
+  credentials: true,  // Allow cookies
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
 
