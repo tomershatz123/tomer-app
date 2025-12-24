@@ -55,16 +55,17 @@ app.post('/api/login', async (req: Request, res: Response) => {
     // Generate JWT token
     const token = generateToken(user.id, user.email);
 
-    res.cookie('token', token, {
-      httpOnly: true,        // Prevents JavaScript access (XSS protection)
-      secure: true,          // Only sent over HTTPS in production
-      sameSite: 'strict',    // CSRF protection
-      maxAge: 24 * 60 * 60 * 1000  // 24 hours
-    });
+    // res.cookie('token', token, {
+    //   httpOnly: true,        // Prevents JavaScript access (XSS protection)
+    //   secure: true,          // Only sent over HTTPS in production
+    //   sameSite: 'strict',    // CSRF protection
+    //   maxAge: 24 * 60 * 60 * 1000  // 24 hours
+    // });
 
     // Return token and user info
     res.json({
       successs: true,
+      token,
       user: {
         id: user.id,
         name: user.name,
