@@ -21,9 +21,14 @@ app.use(cors({
     'https://tomer-app.onrender.com'
   ],
   credentials: true,  // Allow cookies
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
+  exposedHeaders: ['Set-Cookie'],
+  maxAge: 600
 }));
+// Handle preflight
+// app.options('*', cors());
+
 app.use(express.json());
 
 // Login route - NO authentication required

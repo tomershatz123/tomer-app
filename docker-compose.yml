@@ -28,7 +28,7 @@ services:
       - DB_NAME=tomerapp
       - DB_USER=postgres  # Override for Docker
       - DB_PASSWORD=secret  # Override for Docker
-      - JWT_SECRET=your-secret-key-change-this-in-production
+      - JWT_SECRET=your-secret-key-change-this-in-production-use-something-long-and-random
       - NODE_ENV=development
       - PORT=5001
     depends_on:
@@ -45,7 +45,7 @@ services:
   db:
     image: postgres:15-alpine
     ports:
-      - "5432:5432"
+      - "5433:5432"
     environment:
       POSTGRES_DB: tomerapp
       POSTGRES_USER: postgres
