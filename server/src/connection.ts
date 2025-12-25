@@ -1,4 +1,7 @@
-const { Pool } = require('pg');
+import { Pool } from 'pg';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 // Render provides DATABASE_URL in production
 const pool = new Pool({
@@ -7,4 +10,5 @@ const pool = new Pool({
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
 
-module.exports = pool;
+export default pool;
+

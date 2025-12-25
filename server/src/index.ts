@@ -4,7 +4,7 @@ dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 import express, { Request, Response } from 'express';
 import cors from 'cors';
-import pool from './db';
+import pool from './connection'
 import { User, Task, TaskColor } from './types';
 import { authenticateToken, AuthRequest, generateToken } from './auth';
 import cookieParser from 'cookie-parser';
