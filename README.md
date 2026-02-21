@@ -121,6 +121,12 @@ A full-stack task management application built with React, TypeScript, Node.js, 
    npm start
 ```
 
+   **Terminal 3 - Electron Frontend:**
+```bash
+   cd client
+   npx electron .
+```
+
 6. Open http://localhost:3000 in your browser
 
 ## API Endpoints
